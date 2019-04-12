@@ -90,10 +90,36 @@ content_layers_default = ['conv_4']
 class CNNFeatureExtractor:
     def __init__(self):
         # importing the pretrained CNN
-        self.cnn = models.vgg19(pretrained=True).features.to(device).eval()
+        cnn = models.vgg19(pretrained=True).features.to(device).eval()
+        normalization = Normalization(cnn_normalization_mean, cnn_normalization_std).to(device)
+        model = nn.Sequential(normalization)
+
+        i = 0  # increment every time we see a conv
+        for layer in cnn.children():
+            if isinstance(layer, nn.Conv2d):
+                i += 1
+                name = 'conv_{}'.format(i)
+            elif isinstance(layer, nn.ReLU):
+                name = 'relu_{}'.format(i)
+                # The in-place version doesn't play very nicely with the ContentLoss
+                # and StyleLoss we insert below. So we replace with out-of-place
+                # ones here.
+                layer = nn.ReLU(inplace=False)
+            elif isinstance(layer, nn.MaxPool2d):
+                name = 'pool_{}'.format(i)
+            elif isinstance(layer, nn.BatchNorm2d):
+                name = 'bn_{}'.format(i)
+            else:
+                raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
+
+            model.add_module(name, layer)
+        self.model = model[:(i + 1)]
 
     # retrain the model on small datasets containing hand drawn sketches
     def fine_tune_model(self, additional_datasets_url):
+        pass
+
+    def loss(self, img1, img2):
         pass
 
 
@@ -101,14 +127,15 @@ class CNNFeatureExtractor:
 # Content Loss
 class ContentLoss(nn.Module):
 
-    def __init__(self, target):
+    def __init__(self, cnn, target_image):
         super(ContentLoss, self).__init__()
         # we 'detach' the target content from the tree used
         # to dynamically compute the gradient: this is a stated value,
         # not a variable. Otherwise the forward method of the criterion
         # will throw an error.
-        self.target = target.detach()
+        self.target = cnn(target_image).detach()
+        self.loss = 0
 
     def forward(self, input):
         self.loss = F.mse_loss(input, self.target)
-        return input
+        return self.loss

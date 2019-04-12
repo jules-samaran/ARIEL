@@ -7,7 +7,7 @@ from model_encoder import *
 
 
 class Drawer:
-    def __init__(self, input_img, imsize):
+    def __init__(self, input_img, imsize=imsize):
         self.drawing = torch.zeros([imsize, imsize, 3], dtype=torch.int32)
         self.input_img = input_img
         # line_drawer is a simple MLP who draws a line on the drawing
@@ -35,8 +35,13 @@ class LineDrawer:
 
 
 # main function
-def run():
+def run(n_lines):
     model = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches
     model.fine_tune_model(["url_sketches"])
+    input_img = image_loader("./images/dancing.jpg")
+    drawer = Drawer(input_img)
+    for k in range(n_lines):
+        drawer.run_segment_optimizer(model)
+        imshow(drawer.drawing)
