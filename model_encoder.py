@@ -84,6 +84,7 @@ class Normalization(nn.Module):
         return (img - self.mean) / self.std
 
 
+# We define which layer we are going to extract encoded features from
 content_layers_default = ['conv_4']
 
 
@@ -113,29 +114,28 @@ class CNNFeatureExtractor:
                 raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
 
             model.add_module(name, layer)
-        self.model = model[:(i + 1)]
+        self.model = model[:9]  # [:(i + 1)] we truncate all the layers after the fourth conv layer
 
     # retrain the model on small datasets containing hand drawn sketches
     def fine_tune_model(self, additional_datasets_url):
         pass
 
-    def loss(self, img1, img2):
-        pass
+    def add_comparison_loss(self, input_img):
+        self.comparison_loss = ContentLoss(self.model, input_img)
 
 
 ######################################################################
 # Content Loss
 class ContentLoss(nn.Module):
 
-    def __init__(self, cnn, target_image):
+    def __init__(self, model, target_image):
         super(ContentLoss, self).__init__()
         # we 'detach' the target content from the tree used
         # to dynamically compute the gradient: this is a stated value,
         # not a variable. Otherwise the forward method of the criterion
         # will throw an error.
-        self.target = cnn(target_image).detach()
-        self.loss = 0
+        self.target = model(target_image).detach()
 
     def forward(self, input):
-        self.loss = F.mse_loss(input, self.target)
-        return self.loss
+        loss = F.mse_loss(input, self.target)
+        return loss

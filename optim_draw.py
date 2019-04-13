@@ -46,7 +46,8 @@ def run(n_lines):
     # model.fine_tune_model(["url_sketches"])
     for param in cnn.model.parameters():  # the cnn feature extractor has already been trained, we freeze its parameters
         param.requires_grad = False
-    input_img = image_loader("./images/dancing.jpg")
+    input_img = image_loader("./Images/dancer.jpg")
+    cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
     for k in range(n_lines):
         drawer.run_segment_optimizer(cnn.model)
