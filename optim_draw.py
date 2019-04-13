@@ -17,9 +17,13 @@ class Drawer:
         print('Optimizing the drawing..')
         epoch = 0
         # reinitializing optimizer at each segment or not?
+        optimizer = optim.Adam([self.line_drawer.start_point, self.line_drawer.end_point])
         while epoch <= n_epochs:
-            loss = model.loss(self.input_img, self.line_drawer(self.drawing))
+            optimizer.zero_grad()
+            loss = model.loss(self.input_img, self.line_drawer.forward((self.drawing)))
             loss.backward()
+            optimizer.step()
+            self.drawing = self.line_drawer.forward(self.drawing)
 
 
 class LineDrawer:
@@ -27,7 +31,7 @@ class LineDrawer:
     def __init__(self):
         self.start_point = torch.tensor([0, 0])
         self.end_point = torch.tensor([0, 0])
-        self.width = torch.tensor(5)
+        self.width = torch.tensor(3)
 
     def forward(self, current_drawing):
         # adding a line with tensor operations (Kubik)
@@ -36,12 +40,14 @@ class LineDrawer:
 
 # main function
 def run(n_lines):
-    model = CNNFeatureExtractor()
+    cnn = CNNFeatureExtractor()
 
-    # retrain the model on small datasets containing hand drawn sketches
-    model.fine_tune_model(["url_sketches"])
+    # retrain the model on small datasets containing hand drawn sketches NOT YET
+    # model.fine_tune_model(["url_sketches"])
+    for param in cnn.model.parameters():  # the cnn feature extractor has already been trained, we freeze its parameters
+        param.requires_grad = False
     input_img = image_loader("./images/dancing.jpg")
     drawer = Drawer(input_img)
     for k in range(n_lines):
-        drawer.run_segment_optimizer(model)
+        drawer.run_segment_optimizer(cnn.model)
         imshow(drawer.drawing)
