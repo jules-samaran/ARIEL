@@ -17,7 +17,8 @@ class Drawer:
         print('Optimizing the drawing..')
         epoch = 0
         # reinitializing optimizer at each segment or not?
-        optimizer = optim.Adam([self.line_drawer.start_point, self.line_drawer.end_point])
+        optimizer = optim.Adam([self.line_drawer.start_point.requires_grad_(),
+                                self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
             optimizer.zero_grad()
             loss = model.loss(self.input_img, self.line_drawer.forward((self.drawing)))
