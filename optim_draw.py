@@ -8,7 +8,7 @@ from model_encoder import *
 
 class Drawer:
     def __init__(self, input_img, imsize=imsize):
-        self.drawing = torch.zeros([imsize, imsize, 3], dtype=torch.int32)
+        self.drawing = torch.zeros([1, 3, imsize, imsize], dtype=torch.int32)
         self.input_img = input_img
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
@@ -31,12 +31,13 @@ class LineDrawer:
 
     def __init__(self):
         self.start_point = torch.tensor([0, 0])
-        self.end_point = torch.tensor([10, 10])
-        self.width = torch.tensor(3)
+        self.end_point = torch.tensor([100, 100])
+        self.width = 5
 
     def forward(self, current_drawing):
-        # adding a line with tensor operations (Kubik)
-        pass
+        drawing_with_line=copy.deepcopy(current_drawing)
+        # Creating a boolean tensor with value true inside the line between start_point and end_point
+        line=torch.tensor([[(j-self.start_point[0])*(self.end_point[1]-self.start_point[1])-(i-self.start_point[1])*(self.end_point[0]-self.start_point[0])<self.width for j in range(imsize)] for i in range(imsize)])
 
 
 # main function
