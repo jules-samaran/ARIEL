@@ -31,7 +31,7 @@ class LineDrawer:
 
     def __init__(self):
         self.start_point = torch.tensor([0, 0])
-        self.end_point = torch.tensor([0, 0])
+        self.end_point = torch.tensor([10, 10])
         self.width = torch.tensor(3)
 
     def forward(self, current_drawing):
