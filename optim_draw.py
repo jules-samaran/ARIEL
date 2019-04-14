@@ -7,7 +7,7 @@ from model_encoder import *
 
 class Drawer:
     def __init__(self, input_img, imsize=imsize):
-        self.drawing = torch.zeros([1, 3, imsize, imsize], dtype=torch.int32)
+        self.drawing = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
         self.input_img = input_img
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
@@ -20,7 +20,7 @@ class Drawer:
                                 self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
             optimizer.zero_grad()
-            loss = model.loss(self.input_img, self.line_drawer.forward((self.drawing)))
+            loss = model.loss(self.input_img, self.line_drawer.forward(self.drawing))
             loss.backward()
             optimizer.step()
             self.drawing = self.line_drawer.forward(self.drawing)
@@ -29,35 +29,34 @@ class Drawer:
 class LineDrawer:
 
     def __init__(self):
-        self.start_point = torch.tensor([0, 0])
-        self.end_point = torch.tensor([100, 100])
+        self.start_point = torch.tensor([0, 0], dtype=torch.float32)
+        self.end_point = torch.tensor([100, 100], dtype=torch.float32)
         self.width = 5
 
     def forward(self, current_drawing):
-        length=torch.dist(self.start_point,self.end_point)
+        length = torch.dist(self.start_point, self.end_point)
 
-        #determinant for line width
+        # determinant for line width
         det = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
                               (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0])
-                              for j in range(imsize)] for i in range(imsize)])
+                              for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
 
-        #scalar product to test belonging to the segment
+        # scalar product to test belonging to the segment
         scal = torch.tensor([[(j - self.start_point[0]) * (self.end_point[0] - self.start_point[0]) +
                              (i - self.start_point[1]) * (self.end_point[1] - self.start_point[1])
-                             for j in range(imsize)] for i in range(imsize)])
+                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
 
-        #combining the above tensors to obtain the line, using sigmoids for differentiability
-        line = torch.sigmoid(10*(det-self.width)) * torch.sigmoid(10*(self.width-det)) *\
-               torch.sigmoid(10* scal) * torch.sigmoid(10*(length*length-scal))
+        # combining the above tensors to obtain the line, using sigmoids for differentiability
+        line = torch.sigmoid(10*(det+self.width)) * torch.sigmoid(10*(self.width-det)) \
+            * torch.sigmoid(10*scal) * torch.sigmoid(10*(length*length-scal))
 
-        #putting the line in the format [1,3,imsize,imsize]
-        line13=torch.tensor([[line for i in range(3)]])
+        # putting the line in the format [1, 3, imsize, imsize]
+        line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
 
-        #returning a copy of the drawing with the line
-        #the sum must be less than one so we use the relativistic speed composition law with c=1
+        # returning a copy of the drawing with the line
+        # the sum must be less than one so we use the relativistic speed composition law with c=1
         drawing_copy = copy.deepcopy(current_drawing)
-        return((drawing_copy+line13)/(torch.ones([1,3,imsize,imsize])+drawing_copy*line13))
-
+        return (drawing_copy-line13)/(torch.ones([1, 3, imsize, imsize])+drawing_copy*line13)
 
 
 # main function

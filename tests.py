@@ -10,9 +10,10 @@ def test_img_and_cnn():
 
 
 def test_line_drawer():
-    blank_img = torch.zeros([1, 3, imsize, imsize], dtype=torch.int32)
+    blank_img = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
     line_drawer = LineDrawer()
-    line_drawer.forward(blank_img)
+    drawn = line_drawer.forward(blank_img)
+    imshow(drawn)
 
 
 test_img_and_cnn()
