@@ -37,7 +37,9 @@ class LineDrawer:
     def forward(self, current_drawing):
         drawing_with_line=copy.deepcopy(current_drawing)
         # Creating a boolean tensor with value true inside the line between start_point and end_point
-        line=torch.tensor([[(j-self.start_point[0])*(self.end_point[1]-self.start_point[1])-(i-self.start_point[1])*(self.end_point[0]-self.start_point[0])<self.width for j in range(imsize)] for i in range(imsize)])
+        line = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
+                              (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0]) < self.width
+                              for j in range(imsize)] for i in range(imsize)])
 
 
 # main function
