@@ -34,11 +34,30 @@ class LineDrawer:
         self.width = 5
 
     def forward(self, current_drawing):
-        drawing_with_line = copy.deepcopy(current_drawing)
-        # Creating a boolean tensor with value true inside the line between start_point and end_point
-        line = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
-                              (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0]) < self.width
+        length=torch.dist(self.start_point,self.end_point)
+
+        #determinant for line width
+        det = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
+                              (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0])
                               for j in range(imsize)] for i in range(imsize)])
+
+        #scalar product to test belonging to the segment
+        scal = torch.tensor([[(j - self.start_point[0]) * (self.end_point[0] - self.start_point[0]) +
+                             (i - self.start_point[1]) * (self.end_point[1] - self.start_point[1])
+                             for j in range(imsize)] for i in range(imsize)])
+
+        #combining the above tensors to obtain the line, using sigmoids for differentiability
+        line = torch.sigmoid(10*(det-self.width)) * torch.sigmoid(10*(self.width-det)) *\
+               torch.sigmoid(10* scal) * torch.sigmoid(10*(length*length-scal))
+
+        #putting the line in the format [1,3,imsize,imsize]
+        line13=torch.tensor([[line for i in range(3)]])
+
+        #returning a copy of the drawing with the line
+        #the sum must be less than one so we use the relativistic speed composition law with c=1
+        drawing_copy = copy.deepcopy(current_drawing)
+        return((drawing_copy+line13)/(torch.ones([1,3,imsize,imsize])+drawing_copy*line13))
+
 
 
 # main function
