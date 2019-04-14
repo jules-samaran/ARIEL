@@ -1,8 +1,7 @@
 
 from __future__ import print_function
-import torch
 import torch.optim as optim
-import numpy as np
+import copy
 from model_encoder import *
 
 
@@ -35,7 +34,7 @@ class LineDrawer:
         self.width = 5
 
     def forward(self, current_drawing):
-        drawing_with_line=copy.deepcopy(current_drawing)
+        drawing_with_line = copy.deepcopy(current_drawing)
         # Creating a boolean tensor with value true inside the line between start_point and end_point
         line = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
                               (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0]) < self.width
