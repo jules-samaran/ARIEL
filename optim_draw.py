@@ -20,7 +20,7 @@ class Drawer:
                                 self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
             optimizer.zero_grad()
-            loss = model.loss(self.input_img, self.line_drawer.forward(self.drawing))
+            loss = model.comparison_loss(self.input_img, self.line_drawer.forward(self.drawing))
             loss.backward()
             optimizer.step()
             self.drawing = self.line_drawer.forward(self.drawing)
