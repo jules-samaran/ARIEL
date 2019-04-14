@@ -16,5 +16,10 @@ def test_line_drawer():
     imshow(drawn)
 
 
-test_img_and_cnn()
-test_line_drawer()
+def test_overall():
+    run(3)
+
+
+#test_img_and_cnn()
+#test_line_drawer()
+test_overall()

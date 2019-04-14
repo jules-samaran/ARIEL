@@ -12,17 +12,19 @@ class Drawer:
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
 
-    def run_segment_optimizer(self, model, n_epochs=50):
-        print('Optimizing the drawing..')
+    def run_segment_optimizer(self, cnn, n_epochs=20):
+        print('Optimizing the line..')
         epoch = 0
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adam([self.line_drawer.start_point.requires_grad_(),
                                 self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
+            print("epoch %i out of %i" % (epoch, n_epochs))
             optimizer.zero_grad()
-            loss = model.comparison_loss(self.input_img, self.line_drawer.forward(self.drawing))
+            loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
             loss.backward()
             optimizer.step()
+            epoch += 1
             self.drawing = self.line_drawer.forward(self.drawing)
 
 
@@ -38,8 +40,8 @@ class LineDrawer:
 
         # determinant for line width
         det = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
-                              (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0])
-                              for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
+                             (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0])
+                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
 
         # scalar product to test belonging to the segment
         scal = torch.tensor([[(j - self.start_point[0]) * (self.end_point[0] - self.start_point[0]) +
@@ -55,7 +57,7 @@ class LineDrawer:
 
         # returning a copy of the drawing with the line
         # the sum must be less than one so we use the relativistic speed composition law with c=1
-        drawing_copy = copy.deepcopy(current_drawing)
+        drawing_copy = torch.tensor(current_drawing, requires_grad=True)
         return (drawing_copy-line13)/(torch.ones([1, 3, imsize, imsize])+drawing_copy*line13)
 
 
@@ -71,5 +73,6 @@ def run(n_lines):
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
     for k in range(n_lines):
-        drawer.run_segment_optimizer(cnn.model)
+        print("Drawing line number %i" % k)
+        drawer.run_segment_optimizer(cnn)
         imshow(drawer.drawing)
