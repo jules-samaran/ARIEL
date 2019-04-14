@@ -41,24 +41,24 @@ class LineDrawer:
         # determinant for line width
         det = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
                              (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0])
-                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
+                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32, requires_grad=True)
 
         # scalar product to test belonging to the segment
         scal = torch.tensor([[(j - self.start_point[0]) * (self.end_point[0] - self.start_point[0]) +
                              (i - self.start_point[1]) * (self.end_point[1] - self.start_point[1])
-                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
+                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32, requires_grad=True)
 
         # combining the above tensors to obtain the line, using sigmoids for differentiability
-        line = torch.sigmoid(10*(det+self.width)) * torch.sigmoid(10*(self.width-det)) \
-            * torch.sigmoid(10*scal) * torch.sigmoid(10*(length*length-scal))
+        line = torch.ones([imsize, imsize]) -\
+               torch.sigmoid(10*(det+self.width)) * torch.sigmoid(10*(self.width-det)) \
+             * torch.sigmoid(10*scal) * torch.sigmoid(10*(length*length-scal))
 
         # putting the line in the format [1, 3, imsize, imsize]
         line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
 
         # returning a copy of the drawing with the line
-        # the sum must be less than one so we use the relativistic speed composition law with c=1
         drawing_copy = torch.tensor(current_drawing, requires_grad=True)
-        return (drawing_copy-line13)/(torch.ones([1, 3, imsize, imsize])+drawing_copy*line13)
+        return (drawing_copy*line13)
 
 
 # main function

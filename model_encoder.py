@@ -16,7 +16,9 @@ import torchvision.models as models
 ######################################################################
 # if a GPU is available, running on it will be much faster
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
+
 
 ######################################################################
 # Loading the Images
