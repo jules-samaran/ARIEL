@@ -12,7 +12,7 @@ class Drawer:
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
 
-    def run_segment_optimizer(self, cnn, n_epochs=5):
+    def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Optimizing the line..')
         epoch = 0
         # reinitializing optimizer at each segment or not?
@@ -22,10 +22,11 @@ class Drawer:
             print("epoch %i out of %i" % (epoch, n_epochs))
             optimizer.zero_grad()
             loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
+            print(loss)
             loss.backward()
             optimizer.step()
             epoch += 1
-            self.drawing = self.line_drawer.forward(self.drawing)
+        self.drawing = self.line_drawer.forward(self.drawing)
 
 
 class LineDrawer:
@@ -47,6 +48,7 @@ class LineDrawer:
         end_point_y = self.end_point[1].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
 
 
+        print(start_point_x)
         # determinant for line width
         det = (j_values-start_point_x) * (end_point_y - start_point_y) -\
               (i_values-start_point_y) * (end_point_x - start_point_x)
@@ -82,4 +84,6 @@ def run(n_lines):
     for k in range(n_lines):
         print("Drawing line number %i" % k)
         drawer.run_segment_optimizer(cnn)
-        imshow(drawer.drawing)
+    imshow(drawer.drawing)
+    input("press enter")
+

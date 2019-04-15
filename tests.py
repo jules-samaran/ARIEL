@@ -17,7 +17,7 @@ def test_line_drawer():
 
 
 def test_overall():
-    run(3)
+    run(5)
 
 
 
