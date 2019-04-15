@@ -57,15 +57,15 @@ class LineDrawer:
 
         # combining the above tensors to obtain the line, using sigmoids for differentiability
         line = torch.ones([imsize, imsize]) -\
-               torch.sigmoid(10*(det+self.width)) * torch.sigmoid(10*(self.width-det)) \
-             * torch.sigmoid(10*scal) * torch.sigmoid(10*(length*length-scal))
+            torch.sigmoid(10*(det+self.width)) * torch.sigmoid(10*(self.width-det)) \
+            * torch.sigmoid(10*scal) * torch.sigmoid(10*(length*length-scal))
 
         # putting the line in the format [1, 3, imsize, imsize]
         line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
 
         # returning a copy of the drawing with the line
         drawing_copy = torch.tensor(current_drawing, requires_grad=True)
-        return (drawing_copy*line13)
+        return drawing_copy*line13
 
 
 # main function
@@ -76,7 +76,7 @@ def run(n_lines):
     # model.fine_tune_model(["url_sketches"])
     for param in cnn.model.parameters():  # the cnn feature extractor has already been trained, we freeze its parameters
         param.requires_grad = False
-    input_img = image_loader("./Images/dancer.jpg")
+    input_img = image_loader("./Images/boat.jpg")
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
     for k in range(n_lines):
