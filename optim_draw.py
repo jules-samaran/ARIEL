@@ -12,7 +12,7 @@ class Drawer:
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
 
-    def run_segment_optimizer(self, cnn, n_epochs=20):
+    def run_segment_optimizer(self, cnn, n_epochs=5):
         print('Optimizing the line..')
         epoch = 0
         # reinitializing optimizer at each segment or not?
@@ -31,22 +31,29 @@ class Drawer:
 class LineDrawer:
 
     def __init__(self):
-        self.start_point = torch.tensor([0, 0], dtype=torch.float32)
-        self.end_point = torch.tensor([100, 100], dtype=torch.float32)
+        self.start_point = torch.tensor([64, 32], dtype=torch.float32)
+        self.end_point = torch.tensor([64, 96], dtype=torch.float32)
         self.width = 5
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
 
+        i_values = torch.tensor([[i for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
+        j_values = torch.tensor([[j for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
+
+        start_point_x = self.start_point[0].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
+        start_point_y = self.start_point[1].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
+        end_point_x = self.end_point[0].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
+        end_point_y = self.end_point[1].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
+
+
         # determinant for line width
-        det = torch.tensor([[(j-self.start_point[0]) * (self.end_point[1] - self.start_point[1]) -
-                             (i-self.start_point[1]) * (self.end_point[0] - self.start_point[0])
-                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32, requires_grad=True)
+        det = (j_values-start_point_x) * (end_point_y - start_point_y) -\
+              (i_values-start_point_y) * (end_point_x - start_point_x)
 
         # scalar product to test belonging to the segment
-        scal = torch.tensor([[(j - self.start_point[0]) * (self.end_point[0] - self.start_point[0]) +
-                             (i - self.start_point[1]) * (self.end_point[1] - self.start_point[1])
-                             for j in range(imsize)] for i in range(imsize)], dtype=torch.float32, requires_grad=True)
+        scal = (j_values - start_point_x) * (end_point_x - start_point_x) +\
+               (i_values - start_point_y) * (end_point_y - start_point_y)
 
         # combining the above tensors to obtain the line, using sigmoids for differentiability
         line = torch.ones([imsize, imsize]) -\
