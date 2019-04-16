@@ -1,7 +1,6 @@
 
 from __future__ import print_function
 import torch.optim as optim
-import copy
 from model_encoder import *
 
 
@@ -20,12 +19,13 @@ class Drawer:
                                 self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
+
             def closure():
                 optimizer.zero_grad()
                 loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
                 print(loss)
                 loss.backward()
-                return(loss)
+                return loss
             optimizer.step(closure)
             epoch += 1
         self.drawing = self.line_drawer.forward(self.drawing)
@@ -50,7 +50,6 @@ class LineDrawer:
         end_point_x = self.end_point[0].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
         end_point_y = self.end_point[1].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
 
-
         print(start_point_x)
         # determinant for line width
         det = (j_values-start_point_x) * (end_point_y - start_point_y) -\
@@ -74,7 +73,7 @@ class LineDrawer:
 
 
 # main function
-def run(input_img,n_lines,n_epoch=10):
+def run(input_img, n_lines, n_epoch=10):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
