@@ -16,7 +16,7 @@ class Drawer:
         epoch = 0
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adam([self.line_drawer.start_point.requires_grad_(),
-                                self.line_drawer.end_point.requires_grad_()])
+                                self.line_drawer.end_point.requires_grad_()], lr=0.1)
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
 
@@ -50,7 +50,7 @@ class LineDrawer:
         end_point_x = self.end_point[0].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
         end_point_y = self.end_point[1].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
 
-        print(start_point_x)
+        print(start_point_x.grad_fn)
         # determinant for line width
         det = (j_values-start_point_x) * (end_point_y - start_point_y) -\
               (i_values-start_point_y) * (end_point_x - start_point_x)
