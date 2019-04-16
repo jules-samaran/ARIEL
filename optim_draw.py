@@ -20,11 +20,13 @@ class Drawer:
                                 self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
-            optimizer.zero_grad()
-            loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
-            print(loss)
-            loss.backward()
-            optimizer.step()
+            def closure():
+                optimizer.zero_grad()
+                loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
+                print(loss)
+                loss.backward()
+                return(loss)
+            optimizer.step(closure)
             epoch += 1
         self.drawing = self.line_drawer.forward(self.drawing)
 
@@ -32,9 +34,10 @@ class Drawer:
 class LineDrawer:
 
     def __init__(self):
-        self.start_point = torch.tensor([64, 32], dtype=torch.float32)
+        self.start_point = torch.tensor([50, 20], dtype=torch.float32)
         self.end_point = torch.tensor([64, 96], dtype=torch.float32)
-        self.width = 5
+        self.width = 3
+        self.decay = 10
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
@@ -59,8 +62,8 @@ class LineDrawer:
 
         # combining the above tensors to obtain the line, using sigmoids for differentiability
         line = torch.ones([imsize, imsize]) -\
-            torch.sigmoid(10*(det+self.width)) * torch.sigmoid(10*(self.width-det)) \
-            * torch.sigmoid(10*scal) * torch.sigmoid(10*(length*length-scal))
+            torch.sigmoid(self.decay*(det/length+self.width/2)) * torch.sigmoid(self.decay*(self.width/2-det/length)) \
+            * torch.sigmoid(self.decay*scal/length) * torch.sigmoid(self.decay*(length-scal/length))
 
         # putting the line in the format [1, 3, imsize, imsize]
         line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
@@ -71,19 +74,18 @@ class LineDrawer:
 
 
 # main function
-def run(n_lines):
+def run(n_lines,input_img):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
     # model.fine_tune_model(["url_sketches"])
     for param in cnn.model.parameters():  # the cnn feature extractor has already been trained, we freeze its parameters
         param.requires_grad = False
-    input_img = image_loader("./Images/boat.jpg")
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
     for k in range(n_lines):
         print("Drawing line number %i" % k)
         drawer.run_segment_optimizer(cnn)
-    imshow(drawer.drawing)
-    input("press enter")
+        imshow(drawer.drawing)
+
 
