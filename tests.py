@@ -17,7 +17,7 @@ def test_line_drawer():
 
 
 def test_overall():
-    run(5,image_loader("./Images/boat.jpg"))
+    run(image_loader("./Images/stickboat.jpg"),5,15)
 
 
 

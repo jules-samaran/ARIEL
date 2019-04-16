@@ -74,7 +74,7 @@ class LineDrawer:
 
 
 # main function
-def run(n_lines,input_img):
+def run(input_img,n_lines,n_epoch=10):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -85,7 +85,7 @@ def run(n_lines,input_img):
     drawer = Drawer(input_img)
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        drawer.run_segment_optimizer(cnn)
+        drawer.run_segment_optimizer(cnn,n_epoch)
         imshow(drawer.drawing)
 
 
