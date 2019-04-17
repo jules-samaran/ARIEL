@@ -15,10 +15,9 @@ class Drawer:
     def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Optimizing the line..')
         epoch = 0
-        self.line_drawer = LineDrawer()
         # reinitializing optimizer at each segment or not?
-        optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
-                                self.line_drawer.end_point.requires_grad_()],lr=5)
+        optimizer = optim.Adam([self.line_drawer.start_point.requires_grad_(),
+                                self.line_drawer.end_point.requires_grad_()])
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
             def closure():
@@ -35,10 +34,8 @@ class Drawer:
 class LineDrawer:
 
     def __init__(self):
-        #self.start_point = torch.tensor([50, 20], dtype=torch.float32)
-        #self.end_point = torch.tensor([64, 96], dtype=torch.float32)
-        self.start_point = imsize*torch.rand([2])
-        self.end_point = imsize*torch.rand([2])
+        self.start_point = torch.tensor([50, 20], dtype=torch.float32)
+        self.end_point = torch.tensor([64, 96], dtype=torch.float32)
         self.width = 3
         self.decay = 10
 
@@ -73,9 +70,7 @@ class LineDrawer:
 
         # returning a copy of the drawing with the line
         drawing_copy = torch.tensor(current_drawing, requires_grad=True)
-        output=drawing_copy*line13
-        imshow(output)
-        return output
+        return drawing_copy*line13
 
 
 # main function
@@ -91,6 +86,6 @@ def run(input_img,n_lines,n_epoch=10):
     for k in range(n_lines):
         print("Drawing line number %i" % k)
         drawer.run_segment_optimizer(cnn,n_epoch)
-        #imshow(drawer.drawing)
+        imshow(drawer.drawing)
 
 
