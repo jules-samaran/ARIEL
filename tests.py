@@ -20,8 +20,6 @@ def test_overall():
     run(image_loader("./Images/stickboat.jpg"),5,15)
 
 
-
-
-#test_img_and_cnn()
-#test_line_drawer()
+# test_img_and_cnn()
+# test_line_drawer()
 test_overall()
