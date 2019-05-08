@@ -18,8 +18,7 @@ class Drawer:
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
                                 self.line_drawer.end_point.requires_grad_()],lr=5)
-        optimizer = optim.Adam([self.line_drawer.start_point.requires_grad_(),
-                                self.line_drawer.end_point.requires_grad_()], lr=0.1)
+
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
 
