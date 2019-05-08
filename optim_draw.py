@@ -12,9 +12,19 @@ class Drawer:
         self.line_drawer = LineDrawer()
 
     def run_segment_optimizer(self, cnn, n_epochs=10):
+        print('Initializing the line..')
+        self.line_drawer = LineDrawer()
+        min_loss=cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
+        for i in range(100):
+            test_line = LineDrawer()
+            test_loss = cnn.comparison_loss(cnn.model(test_line.forward(self.drawing)))
+            if test_loss<min_loss:
+                self.line_drawer = test_line
+                min_loss=test_loss
+                print(min_loss)
+
         print('Optimizing the line..')
         epoch = 0
-        self.line_drawer = LineDrawer()
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
                                 self.line_drawer.end_point.requires_grad_()],lr=5)
@@ -40,7 +50,7 @@ class LineDrawer:
         #self.end_point = torch.tensor([64, 96], dtype=torch.float32)
         self.start_point = imsize*torch.rand([2])
         self.end_point = imsize*torch.rand([2])
-        self.width = 3
+        self.width = 2
         self.decay = 10
 
     def forward(self, current_drawing):
@@ -54,7 +64,6 @@ class LineDrawer:
         end_point_x = self.end_point[0].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
         end_point_y = self.end_point[1].unsqueeze(0).expand(imsize).unsqueeze(0).expand(imsize,imsize)
 
-        print(start_point_x.grad_fn)
         # determinant for line width
         det = (j_values-start_point_x) * (end_point_y - start_point_y) -\
               (i_values-start_point_y) * (end_point_x - start_point_x)
