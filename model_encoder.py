@@ -16,9 +16,10 @@ import torchvision.models as models
 ######################################################################
 # if a GPU is available, running on it will be much faster
 
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+torch.set_default_tensor_type('torch.cuda.FloatTensor')
+torch.backends.cudnn.benchmark=True
 
 ######################################################################
 # Loading the Images

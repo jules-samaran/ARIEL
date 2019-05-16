@@ -27,7 +27,7 @@ class Drawer:
         epoch = 0
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
-                                self.line_drawer.end_point.requires_grad_()],lr=5)
+                                self.line_drawer.end_point.requires_grad_(),], lr=5)
 
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
@@ -50,8 +50,8 @@ class LineDrawer:
         #self.end_point = torch.tensor([64, 96], dtype=torch.float32)
         self.start_point = imsize*torch.rand([2])
         self.end_point = imsize*torch.rand([2])
-        self.width = 2
-        self.decay = 10
+        self.width = torch.tensor(5, dtype=torch.float32)
+        self.decay = torch.tensor(0.5, dtype=torch.float32)
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
@@ -81,7 +81,7 @@ class LineDrawer:
         line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
 
         # returning a copy of the drawing with the line
-        drawing_copy = torch.tensor(current_drawing, requires_grad=True)
+        drawing_copy = torch.tensor(current_drawing)
         output=drawing_copy*line13
         imshow(output)
         return output
