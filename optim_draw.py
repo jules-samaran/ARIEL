@@ -14,13 +14,13 @@ class Drawer:
     def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
-        min_loss=cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
+        min_loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
         for i in range(100):
             test_line = LineDrawer()
             test_loss = cnn.comparison_loss(cnn.model(test_line.forward(self.drawing)))
-            if test_loss<min_loss:
+            if test_loss < min_loss:
                 self.line_drawer = test_line
-                min_loss=test_loss
+                min_loss = test_loss
                 print(min_loss)
 
         print('Optimizing the line..')
