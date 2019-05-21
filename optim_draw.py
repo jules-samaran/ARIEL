@@ -27,7 +27,7 @@ class Drawer:
         epoch = 0
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
-                                self.line_drawer.end_point.requires_grad_(),], lr=5)
+                                  self.line_drawer.end_point.requires_grad_()], lr=5)
 
         while epoch <= n_epochs:
             print("epoch %i out of %i" % (epoch, n_epochs))
@@ -46,8 +46,6 @@ class Drawer:
 class LineDrawer:
 
     def __init__(self):
-        #self.start_point = torch.tensor([50, 20], dtype=torch.float32)
-        #self.end_point = torch.tensor([64, 96], dtype=torch.float32)
         self.start_point = imsize*torch.rand([2])
         self.end_point = imsize*torch.rand([2])
         self.width = torch.tensor(5, dtype=torch.float32)
@@ -99,7 +97,6 @@ def run(input_img, n_lines, n_epoch=10):
     drawer = Drawer(input_img)
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        drawer.run_segment_optimizer(cnn,n_epoch)
-        #imshow(drawer.drawing)
+        drawer.run_segment_optimizer(cnn, n_epoch)
 
 
