@@ -17,7 +17,7 @@ def test_line_drawer():
 
 
 def test_overall():
-    run(image_loader("./Images/stickboat.jpg"),5,15)
+    run(image_loader("./Images/stickboat.jpg"),40,100)
 
 
 # test_img_and_cnn()
