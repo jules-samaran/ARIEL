@@ -2,6 +2,7 @@
 from __future__ import print_function
 import torch.optim as optim
 from model_encoder import *
+from tqdm import tqdm
 
 
 class Drawer:
@@ -15,7 +16,8 @@ class Drawer:
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
         min_loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
-        for i in range(100):
+        for i in range(5):
+            print('piche')
             test_line = LineDrawer()
             test_loss = cnn.comparison_loss(cnn.model(test_line.forward(self.drawing)))
             if test_loss < min_loss:
@@ -24,22 +26,21 @@ class Drawer:
                 print(min_loss)
 
         print('Optimizing the line..')
-        epoch = 0
+        line_history = []
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
                                   self.line_drawer.end_point.requires_grad_()], lr=5)
 
-        while epoch <= n_epochs:
-            print("epoch %i out of %i" % (epoch, n_epochs))
+        for epoch in tqdm((range(1, n_epochs + 1))):
 
             def closure():
                 optimizer.zero_grad()
                 loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
-                print(loss)
                 loss.backward()
                 return loss
-            optimizer.step(closure)
-            epoch += 1
+            loss = optimizer.step(closure)
+            line_history.append(loss)
+
         self.drawing = self.line_drawer.forward(self.drawing)
 
 
