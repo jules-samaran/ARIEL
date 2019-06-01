@@ -3,6 +3,7 @@ from __future__ import print_function
 import torch.optim as optim
 from model_encoder import *
 from tqdm import tqdm
+import numpy as np
 
 
 class Drawer:
@@ -16,14 +17,13 @@ class Drawer:
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
         min_loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
-        for i in range(5):
-            print('piche')
+        for i in range(100):
             test_line = LineDrawer()
             test_loss = cnn.comparison_loss(cnn.model(test_line.forward(self.drawing)))
             if test_loss < min_loss:
                 self.line_drawer = test_line
                 min_loss = test_loss
-                print(min_loss)
+                print("Best line initialization loss: ", min_loss.item())
 
         print('Optimizing the line..')
         line_history = []
@@ -39,9 +39,10 @@ class Drawer:
                 loss.backward()
                 return loss
             loss = optimizer.step(closure)
-            line_history.append(loss)
+            line_history.append(loss.item())
 
         self.drawing = self.line_drawer.forward(self.drawing)
+        return line_history
 
 
 class LineDrawer:
@@ -96,8 +97,14 @@ def run(input_img, n_lines, n_epoch=10):
         param.requires_grad = False
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
+    optimization_history = []
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        drawer.run_segment_optimizer(cnn, n_epoch)
+        history = drawer.run_segment_optimizer(cnn, n_epoch)
+        # plt.figure(figsize=(10, 10))
+        # plt.plot(np.arange(n_epoch), history)
+        # plt.xlabel("epoch")
+        # plt.ylabel("Loss")
+        optimization_history.append(history)
 
 
