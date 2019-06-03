@@ -19,11 +19,14 @@ class Drawer:
         min_loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
         for i in range(100):
             test_line = LineDrawer()
-            test_loss = cnn.comparison_loss(cnn.model(test_line.forward(self.drawing)))
+            test_drawing = test_line.forward(self.drawing)
+            test_loss = cnn.comparison_loss(cnn.model(test_drawing))
             if test_loss < min_loss:
                 self.line_drawer = test_line
                 min_loss = test_loss
                 print("Best line initialization loss: ", min_loss.item())
+                imshow(test_drawing)
+
 
         print('Optimizing the line..')
         line_history = []
@@ -42,6 +45,7 @@ class Drawer:
             line_history.append(loss.item())
 
         self.drawing = self.line_drawer.forward(self.drawing)
+        imshow(self.drawing)
         return line_history
 
 
@@ -83,7 +87,7 @@ class LineDrawer:
         # returning a copy of the drawing with the line
         drawing_copy = torch.tensor(current_drawing)
         output=drawing_copy*line13
-        imshow(output)
+        #  imshow(output)  //imshow takes too much time, only show imshow for good intializations
         return output
 
 
@@ -101,10 +105,11 @@ def run(input_img, n_lines, n_epoch=10):
     for k in range(n_lines):
         print("Drawing line number %i" % k)
         history = drawer.run_segment_optimizer(cnn, n_epoch)
-        # plt.figure(figsize=(10, 10))
-        # plt.plot(np.arange(n_epoch), history)
-        # plt.xlabel("epoch")
-        # plt.ylabel("Loss")
+        plt.figure()
+        plt.plot(np.arange(n_epoch), history)
+        plt.xlabel("epoch")
+        plt.ylabel("Loss")
+        plt.show()
         optimization_history.append(history)
 
 
