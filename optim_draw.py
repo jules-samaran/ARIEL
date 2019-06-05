@@ -81,7 +81,7 @@ class LineDrawer:
         line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
 
         # returning a copy of the drawing with the line
-        drawing_copy = torch.tensor(current_drawing)
+        drawing_copy = current_drawing.clone().detach()
         output=drawing_copy*line13
         imshow(output)
         return output
