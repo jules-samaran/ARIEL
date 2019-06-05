@@ -2,6 +2,8 @@
 from __future__ import print_function
 import torch.optim as optim
 from model_encoder import *
+from tqdm import tqdm
+import numpy as np
 
 
 class Drawer:
@@ -14,40 +16,42 @@ class Drawer:
     def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
-        min_loss=cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
+        min_loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
         for i in range(100):
             test_line = LineDrawer()
-            test_loss = cnn.comparison_loss(cnn.model(test_line.forward(self.drawing)))
-            if test_loss<min_loss:
+            test_drawing = test_line.forward(self.drawing)
+            test_loss = cnn.comparison_loss(cnn.model(test_drawing))
+            if test_loss < min_loss:
                 self.line_drawer = test_line
-                min_loss=test_loss
-                print(min_loss)
+                min_loss = test_loss
+                print("Best line initialization loss: ", min_loss.item())
+                imshow(test_drawing)
+
 
         print('Optimizing the line..')
-        epoch = 0
+        line_history = []
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
-                                self.line_drawer.end_point.requires_grad_(),], lr=5)
+                                  self.line_drawer.end_point.requires_grad_()], lr=5)
 
-        while epoch <= n_epochs:
-            print("epoch %i out of %i" % (epoch, n_epochs))
+        for epoch in tqdm((range(1, n_epochs + 1))):
 
             def closure():
                 optimizer.zero_grad()
                 loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
-                print(loss)
                 loss.backward()
                 return loss
-            optimizer.step(closure)
-            epoch += 1
+            loss = optimizer.step(closure)
+            line_history.append(loss.item())
+
         self.drawing = self.line_drawer.forward(self.drawing)
+        imshow(self.drawing)
+        return line_history
 
 
 class LineDrawer:
 
     def __init__(self):
-        #self.start_point = torch.tensor([50, 20], dtype=torch.float32)
-        #self.end_point = torch.tensor([64, 96], dtype=torch.float32)
         self.start_point = imsize*torch.rand([2])
         self.end_point = imsize*torch.rand([2])
         self.width = torch.tensor(5, dtype=torch.float32)
@@ -83,7 +87,7 @@ class LineDrawer:
         # returning a copy of the drawing with the line
         drawing_copy = current_drawing.clone().detach()
         output=drawing_copy*line13
-        imshow(output)
+        #  imshow(output)  //imshow takes too much time, only show imshow for good intializations
         return output
 
 
@@ -97,9 +101,15 @@ def run(input_img, n_lines, n_epoch=10):
         param.requires_grad = False
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
+    optimization_history = []
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        drawer.run_segment_optimizer(cnn,n_epoch)
-        #imshow(drawer.drawing)
+        history = drawer.run_segment_optimizer(cnn, n_epoch)
+        plt.figure()
+        plt.plot(np.arange(n_epoch), history)
+        plt.xlabel("epoch")
+        plt.ylabel("Loss")
+        plt.show()
+        optimization_history.append(history)
 
 
