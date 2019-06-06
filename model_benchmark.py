@@ -3,7 +3,7 @@ from model_encoder import *
 
 
 def get_1line_image(x1, y1, x2, y2):
-    drawing = torch.ones(3, imsize, imsize)
+    drawing = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
     start_point = torch.tensor([x1, y1], dtype=torch.float32)
     end_point = torch.tensor([x2, y2], dtype=torch.float32)
     width = torch.tensor(5, dtype=torch.float32)
