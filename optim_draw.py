@@ -32,7 +32,8 @@ class Drawer:
         line_history = []
         # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
-                                  self.line_drawer.end_point.requires_grad_()], lr=5)
+                                  self.line_drawer.end_point.requires_grad_(),
+                                  ],lr=5)
 
         for epoch in tqdm((range(1, n_epochs + 1))):
 
@@ -58,6 +59,7 @@ class LineDrawer:
         self.end_point = imsize*torch.rand([2])
         self.width = torch.tensor(5, dtype=torch.float32)
         self.decay = torch.tensor(0.5, dtype=torch.float32)
+        self.intensity = torch.tensor(0.3, dtype=torch.float32)
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
@@ -81,7 +83,8 @@ class LineDrawer:
         # combining the above tensors to obtain the line, using sigmoids for differentiability
         line = torch.ones([imsize, imsize]) -\
             torch.sigmoid(self.decay*(det/length+self.width/2)) * torch.sigmoid(self.decay*(self.width/2-det/length)) \
-            * torch.sigmoid(self.decay*scal/length) * torch.sigmoid(self.decay*(length-scal/length))
+            * torch.sigmoid(self.decay*scal/length) * torch.sigmoid(self.decay*(length-scal/length)) \
+            * self.intensity
 
         # putting the line in the format [1, 3, imsize, imsize]
         line13 = line.unsqueeze(0).expand(3, imsize, imsize).unsqueeze(0)
@@ -111,11 +114,11 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True):
         history, start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
         starts.append(start_point)
         ends.append(end_point)
-        plt.figure()
-        plt.plot(np.arange(n_epoch), history)
-        plt.xlabel("epoch")
-        plt.ylabel("Loss")
-        plt.show()
+        #plt.figure()
+        #plt.plot(np.arange(n_epoch), history)
+        #plt.xlabel("epoch")
+        #plt.ylabel("Loss")
+        #plt.show()
         optimization_history.append(history)
     if unblurry:
         final_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
