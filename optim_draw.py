@@ -46,7 +46,9 @@ class Drawer:
 
         self.drawing = self.line_drawer.forward(self.drawing)
         imshow(self.drawing)
-        return line_history
+        start_point = self.line_drawer.start_point
+        end_point = self.line_drawer.end_point
+        return line_history, start_point, end_point
 
 
 class LineDrawer:
@@ -92,7 +94,7 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10):
+def run(input_img, n_lines, n_epoch=10, unblurry=True):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -102,14 +104,25 @@ def run(input_img, n_lines, n_epoch=10):
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
     optimization_history = []
+    starts = []
+    ends = []
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        history = drawer.run_segment_optimizer(cnn, n_epoch)
+        history, start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
+        starts.append(start_point)
+        ends.append(end_point)
         plt.figure()
         plt.plot(np.arange(n_epoch), history)
         plt.xlabel("epoch")
         plt.ylabel("Loss")
         plt.show()
         optimization_history.append(history)
-
-
+    if unblurry:
+        final_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
+        final_line_drawer = LineDrawer()
+        final_line_drawer.decay = torch.tensor(5, dtype=torch.float32)
+        for k in range(n_lines):
+            final_line_drawer.start_point = starts[k]
+            final_line_drawer.end_point = ends[k]
+            final_image = final_line_drawer.forward(final_image)
+        imshow(final_image)
