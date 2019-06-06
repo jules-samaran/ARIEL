@@ -17,7 +17,7 @@ class Drawer:
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
         min_loss = cnn.comparison_loss(cnn.model(self.line_drawer.forward(self.drawing)))
-        for i in range(100):
+        for i in range(200):
             test_line = LineDrawer()
             test_drawing = test_line.forward(self.drawing)
             test_loss = cnn.comparison_loss(cnn.model(test_drawing))
@@ -25,7 +25,7 @@ class Drawer:
                 self.line_drawer = test_line
                 min_loss = test_loss
                 print("Best line initialization loss: ", min_loss.item())
-                imshow(test_drawing)
+        imshow(self.line_drawer.forward(self.drawing))
 
 
         print('Optimizing the line..')
@@ -105,11 +105,11 @@ def run(input_img, n_lines, n_epoch=10):
     for k in range(n_lines):
         print("Drawing line number %i" % k)
         history = drawer.run_segment_optimizer(cnn, n_epoch)
-        plt.figure()
-        plt.plot(np.arange(n_epoch), history)
-        plt.xlabel("epoch")
-        plt.ylabel("Loss")
-        plt.show()
+        #plt.figure()
+        #plt.plot(np.arange(n_epoch), history)
+        #plt.xlabel("epoch")
+        #plt.ylabel("Loss")
+        #plt.show()
         optimization_history.append(history)
 
 

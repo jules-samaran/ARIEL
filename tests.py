@@ -2,7 +2,7 @@ from optim_draw import *
 
 
 def test_img_and_cnn():
-    input_img = image_loader("./Images/boat.jpg")
+    input_img = image_loader("./Images/losange.jpg")
     print(input_img.size())
     imshow(input_img)
     cnn = CNNFeatureExtractor()
@@ -17,7 +17,7 @@ def test_line_drawer():
 
 
 def test_overall():
-    run(image_loader("./Images/stickboat.jpg"), 8, 50)
+    run(image_loader("./Images/losange coloré.jpg"), 10000, 100)
 
 
 # test_img_and_cnn()
