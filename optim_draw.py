@@ -56,8 +56,8 @@ class LineDrawer:
     def __init__(self):
         self.start_point = imsize*torch.rand([2])
         self.end_point = imsize*torch.rand([2])
-        self.width = torch.tensor(5, dtype=torch.float32)
-        self.decay = torch.tensor(0.5, dtype=torch.float32)
+        self.width = torch.tensor(3*imsize/64, dtype=torch.float32)
+        self.decay = torch.tensor(1.0/(imsize/64), dtype=torch.float32)
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
