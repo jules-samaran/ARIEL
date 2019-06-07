@@ -131,4 +131,4 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=None):
         points_title = 'final_coordinates_segments'
     else:
         points_title = save_title + '_final_coordinates_segments'
-    np.save([starts, ends], points_title)
+    np.save(points_title, [starts, ends])
