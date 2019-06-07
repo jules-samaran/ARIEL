@@ -12,6 +12,7 @@ class Drawer:
         self.input_img = input_img
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
+        self.optimization_history = []
 
     def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Initializing the line..')
@@ -26,7 +27,6 @@ class Drawer:
                 min_loss = test_loss
                 print("Best line initialization loss: ", min_loss.item())
         imshow(self.line_drawer.forward(self.drawing))
-
 
         print('Optimizing the line..')
         line_history = []
@@ -48,7 +48,8 @@ class Drawer:
         imshow(self.drawing)
         start_point = self.line_drawer.start_point
         end_point = self.line_drawer.end_point
-        return line_history, start_point, end_point
+        self.history.append(line_history)
+        return start_point, end_point
 
 
 class LineDrawer:
@@ -96,7 +97,7 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=''):
+def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title='', save_optim_history=False):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -105,15 +106,14 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=''):
         param.requires_grad = False
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
-    optimization_history = []
     starts = []
     ends = []
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        history, start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
+        start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
         starts.append(start_point)
         ends.append(end_point)
-        optimization_history.append(history)
+    optimization_history = drawer.optimization_history
     if unblurry:
         final_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
         final_line_drawer = LineDrawer()
@@ -126,3 +126,5 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=''):
         imshow(final_image, title=image_title, save=True)
     points_title = save_title + '_final_coordinates_segments'
     np.save(points_title, [starts, ends])
+    if save_optim_history:
+        np.save(save_title+'_optimization_history', optimization_history)
