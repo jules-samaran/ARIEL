@@ -54,9 +54,9 @@ class Drawer:
 class LineDrawer:
 
     def __init__(self):
-        self.start_point = imsize*torch.rand([2])
-        self.end_point = imsize*torch.rand([2])
-        self.width = torch.tensor(1*imsize/64, dtype=torch.float32)
+        self.start_point = imsize * torch.rand([2])
+        self.end_point = imsize * torch.rand([2])
+        self.width = torch.tensor(1 * imsize/64, dtype=torch.float32)
         self.decay = torch.tensor(2.0/(imsize/64), dtype=torch.float32)
         self.intensity = torch.tensor(0.3, dtype=torch.float32)
 
@@ -90,13 +90,13 @@ class LineDrawer:
 
         # returning a copy of the drawing with the line
         drawing_copy = current_drawing.clone().detach()
-        output=drawing_copy*line13
+        output = drawing_copy*line13
         #  imshow(output)  //imshow takes too much time, only show imshow for good intializations
         return output
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, unblurry=True):
+def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=None):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -113,11 +113,6 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True):
         history, start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
         starts.append(start_point)
         ends.append(end_point)
-        #plt.figure()
-        #plt.plot(np.arange(n_epoch), history)
-        #plt.xlabel("epoch")
-        #plt.ylabel("Loss")
-        #plt.show()
         optimization_history.append(history)
     if unblurry:
         final_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
@@ -127,4 +122,13 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True):
             final_line_drawer.start_point = starts[k]
             final_line_drawer.end_point = ends[k]
             final_image = final_line_drawer.forward(final_image)
-        imshow(final_image)
+        if save_title is None:
+            image_title = 'finished_drawing.pdf'
+        else:
+            image_title = save_title + 'finished_drawing.pdf'
+        imshow(final_image, title=image_title, save=True)
+    if save_title is None:
+        points_title = 'final_coordinates_segments'
+    else:
+        points_title = save_title + '_final_coordinates_segments'
+    np.save([starts, ends], points_title)
