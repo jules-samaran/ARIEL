@@ -96,7 +96,7 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=None):
+def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=''):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -122,13 +122,7 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title=None):
             final_line_drawer.start_point = starts[k]
             final_line_drawer.end_point = ends[k]
             final_image = final_line_drawer.forward(final_image)
-        if save_title is None:
-            image_title = 'finished_drawing.pdf'
-        else:
-            image_title = save_title + 'finished_drawing.pdf'
+        image_title = save_title + 'finished_drawing.pdf'
         imshow(final_image, title=image_title, save=True)
-    if save_title is None:
-        points_title = 'final_coordinates_segments'
-    else:
-        points_title = save_title + '_final_coordinates_segments'
+    points_title = save_title + '_final_coordinates_segments'
     np.save(points_title, [starts, ends])
