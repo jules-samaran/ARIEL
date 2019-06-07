@@ -56,8 +56,8 @@ class LineDrawer:
     def __init__(self):
         self.start_point = imsize*torch.rand([2])
         self.end_point = imsize*torch.rand([2])
-        self.width = torch.tensor(3*imsize/64, dtype=torch.float32)
-        self.decay = torch.tensor(1.0/(imsize/64), dtype=torch.float32)
+        self.width = torch.tensor(1*imsize/64, dtype=torch.float32)
+        self.decay = torch.tensor(2.0/(imsize/64), dtype=torch.float32)
         self.intensity = torch.tensor(0.3, dtype=torch.float32)
 
     def forward(self, current_drawing):
@@ -113,11 +113,11 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True):
         history, start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
         starts.append(start_point)
         ends.append(end_point)
-        plt.figure()
-        plt.plot(np.arange(n_epoch), history)
-        plt.xlabel("epoch")
-        plt.ylabel("Loss")
-        plt.show()
+        #plt.figure()
+        #plt.plot(np.arange(n_epoch), history)
+        #plt.xlabel("epoch")
+        #plt.ylabel("Loss")
+        #plt.show()
         optimization_history.append(history)
     if unblurry:
         final_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
