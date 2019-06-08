@@ -16,10 +16,11 @@ def test_line_drawer():
     imshow(drawn)
 
 
-def test_overall():
-    run(image_loader("./Images/boat.jpg"), 1000, 100)
+def test_overall(names_list):
+    for name in names_list:
+        run(image_loader("./Images/"+name+".jpg"), 10, 100,True,name)
 
 
 # test_img_and_cnn()
 # test_line_drawer()
-test_overall()
+test_overall(["chat","nemo"])

@@ -12,8 +12,10 @@ class Drawer:
         self.input_img = input_img
         # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
-        self.optimization_history = []
+        self.loss_history = []
+        self.line_history = []
 
+    #Adds a new line
     def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
@@ -25,7 +27,7 @@ class Drawer:
             if test_loss < min_loss:
                 self.line_drawer = test_line
                 min_loss = test_loss
-                print("Best line initialization loss: ", min_loss.item())
+        print("Best line initialization loss: ", min_loss.item())
         imshow(self.line_drawer.forward(self.drawing))
 
         print('Optimizing the line..')
@@ -42,14 +44,13 @@ class Drawer:
                 loss.backward()
                 return loss
             loss = optimizer.step(closure)
-            line_history.append(loss.item())
 
+        print("Final loss : ",loss.item())
         self.drawing = self.line_drawer.forward(self.drawing)
         imshow(self.drawing)
-        start_point = self.line_drawer.start_point
-        end_point = self.line_drawer.end_point
-        self.history.append(line_history)
-        return start_point, end_point
+
+        self.line_history.append([self.line_drawer.start_point.clone(),self.line_drawer.end_point.clone()])
+        self.loss_history.append(loss.item())
 
 
 class LineDrawer:
@@ -96,8 +97,9 @@ class LineDrawer:
         return output
 
 
+
 # main function
-def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title='', save_optim_history=False):
+def run(input_img, n_lines, n_epoch=10, sharp=True, save_title='untitled'):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -106,25 +108,28 @@ def run(input_img, n_lines, n_epoch=10, unblurry=True, save_title='', save_optim
         param.requires_grad = False
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
-    starts = []
-    ends = []
+
+    #Adding the lines
     for k in range(n_lines):
         print("Drawing line number %i" % k)
-        start_point, end_point = drawer.run_segment_optimizer(cnn, n_epoch)
-        starts.append(start_point)
-        ends.append(end_point)
-    optimization_history = drawer.optimization_history
-    if unblurry:
-        final_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
-        final_line_drawer = LineDrawer()
-        final_line_drawer.decay = torch.tensor(5, dtype=torch.float32)
-        for k in range(n_lines):
-            final_line_drawer.start_point = starts[k]
-            final_line_drawer.end_point = ends[k]
-            final_image = final_line_drawer.forward(final_image)
-        image_title = save_title + 'finished_drawing.pdf'
-        imshow(final_image, title=image_title, save=True)
-    points_title = save_title + '_final_coordinates_segments'
-    np.save(points_title, [starts, ends])
-    if save_optim_history:
-        np.save(save_title+'_optimization_history', optimization_history)
+        drawer.run_segment_optimizer(cnn, n_epoch)
+
+    #Saving
+    image_title=save_title + '_drawing.jpg'
+    imshow(drawer.drawing, title=image_title, save=True)
+
+    points_title = save_title + '_segment_coordinates'
+    np.save(points_title, drawer.line_history)
+
+    if sharp:
+        sharp_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
+        sharp_line_drawer = LineDrawer()
+        for line in drawer.line_history:
+            sharp_line_drawer.start_point=line[0]
+            sharp_line_drawer.end_point=line[1]
+            sharp_line_drawer.decay=6.0/(imsize/64)
+            sharp_image = sharp_line_drawer.forward(sharp_image)
+        sharp_title = save_title + '_sharp_drawing.jpg'
+        imshow(sharp_image, title=sharp_title, save=True)
+
+
