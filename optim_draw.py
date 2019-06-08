@@ -15,7 +15,7 @@ class Drawer:
         self.loss_history = []
         self.line_history = []
 
-    #Adds a new line
+    # Draws a new line
     def run_segment_optimizer(self, cnn, n_epochs=10):
         print('Initializing the line..')
         self.line_drawer = LineDrawer()
@@ -27,12 +27,11 @@ class Drawer:
             if test_loss < min_loss:
                 self.line_drawer = test_line
                 min_loss = test_loss
-        print("Best line initialization loss: ", min_loss.item())
+                print("Current best line initialization loss: ", min_loss.item())
+        # Display only the best initialization
         imshow(self.line_drawer.forward(self.drawing))
 
         print('Optimizing the line..')
-        line_history = []
-        # reinitializing optimizer at each segment or not?
         optimizer = optim.Adamax([self.line_drawer.start_point.requires_grad_(),
                                   self.line_drawer.end_point.requires_grad_()], lr=5)
 
@@ -45,7 +44,7 @@ class Drawer:
                 return loss
             loss = optimizer.step(closure)
 
-        print("Final loss : ",loss.item())
+        print("Final loss : ", loss.item())
         self.drawing = self.line_drawer.forward(self.drawing)
         imshow(self.drawing)
 
@@ -93,13 +92,11 @@ class LineDrawer:
         # returning a copy of the drawing with the line
         drawing_copy = current_drawing.clone().detach()
         output = drawing_copy*line13
-        #  imshow(output)  //imshow takes too much time, only show imshow for good intializations
         return output
 
 
-
 # main function
-def run(input_img, n_lines, n_epoch=10, sharp=True, save_title='untitled'):
+def run(input_img, n_lines, n_epoch=10, clean=True, save_title='untitled'):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -109,27 +106,25 @@ def run(input_img, n_lines, n_epoch=10, sharp=True, save_title='untitled'):
     cnn.add_comparison_loss(input_img)
     drawer = Drawer(input_img)
 
-    #Adding the lines
+    # Drawing the lines
     for k in range(n_lines):
         print("Drawing line number %i" % k)
         drawer.run_segment_optimizer(cnn, n_epoch)
 
-    #Saving
+    # Saving results
     image_title=save_title + '_drawing.jpg'
     imshow(drawer.drawing, title=image_title, save=True)
 
     points_title = save_title + '_segment_coordinates'
     np.save(points_title, drawer.line_history)
 
-    if sharp:
-        sharp_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
-        sharp_line_drawer = LineDrawer()
+    if clean:
+        clean_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
+        clean_line_drawer = LineDrawer()
         for line in drawer.line_history:
-            sharp_line_drawer.start_point=line[0]
-            sharp_line_drawer.end_point=line[1]
-            sharp_line_drawer.decay=6.0/(imsize/64)
-            sharp_image = sharp_line_drawer.forward(sharp_image)
-        sharp_title = save_title + '_sharp_drawing.jpg'
-        imshow(sharp_image, title=sharp_title, save=True)
-
-
+            clean_line_drawer.start_point=line[0]
+            clean_line_drawer.end_point=line[1]
+            clean_line_drawer.decay=6.0/(imsize/64)
+            clean_image = clean_line_drawer.forward(clean_image)
+        clean_title = save_title + '_clean_drawing.jpg'
+        imshow(clean_image, title=clean_title, save=True)

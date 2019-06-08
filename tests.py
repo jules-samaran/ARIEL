@@ -18,7 +18,7 @@ def test_line_drawer():
 
 def test_overall(names_list):
     for name in names_list:
-        run(image_loader("./Images/"+name+".jpg"), 300, 100,True,name)
+        run(image_loader("./Images/"+name+".jpg"), 300, 100, True, name)
 
 
 # test_img_and_cnn()
