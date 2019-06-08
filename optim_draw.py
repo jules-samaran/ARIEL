@@ -57,9 +57,9 @@ class LineDrawer:
     def __init__(self):
         self.start_point = imsize * torch.rand([2])
         self.end_point = imsize * torch.rand([2])
-        self.width = torch.tensor(1 * imsize/64, dtype=torch.float32)
+        self.width = torch.tensor(0 * imsize/64, dtype=torch.float32)
         self.decay = torch.tensor(2.0/(imsize/64), dtype=torch.float32)
-        self.intensity = torch.tensor(0.3, dtype=torch.float32)
+        self.intensity = torch.tensor(1., dtype=torch.float32)
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
@@ -96,7 +96,7 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, clean=True, save_title='untitled'):
+def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untitled'):
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -113,10 +113,11 @@ def run(input_img, n_lines, n_epoch=10, clean=True, save_title='untitled'):
 
     # Saving results
     image_title=save_title + '_drawing.jpg'
-    imshow(drawer.drawing, title=image_title, save=True)
+    imshow(drawer.drawing, title=image_title, save=save)
 
-    points_title = save_title + '_segment_coordinates'
-    np.save(points_title, drawer.line_history)
+    if save:
+        points_title = save_title + '_segment_coordinates'
+        np.save(points_title, drawer.line_history)
 
     if clean:
         clean_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
@@ -127,4 +128,5 @@ def run(input_img, n_lines, n_epoch=10, clean=True, save_title='untitled'):
             clean_line_drawer.decay=6.0/(imsize/64)
             clean_image = clean_line_drawer.forward(clean_image)
         clean_title = save_title + '_clean_drawing.jpg'
-        imshow(clean_image, title=clean_title, save=True)
+        imshow(clean_image, title=clean_title, save=save)
+    return drawer

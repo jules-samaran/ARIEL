@@ -18,9 +18,9 @@ def test_line_drawer():
 
 def test_overall(names_list):
     for name in names_list:
-        run(image_loader("./Images/"+name+".jpg"), 300, 100, True, name)
+        _ = run(image_loader("./Images/"+name+".jpg"), 600, 50, clean=True, save=True, save_title=name)
 
 
 # test_img_and_cnn()
 # test_line_drawer()
-test_overall(["chat","nemo"])
+test_overall(["chat"])
