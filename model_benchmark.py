@@ -2,12 +2,15 @@ from optim_draw import *
 from model_encoder import *
 
 
-def get_1line_image(x1, y1, x2, y2):
+def get_1line_image(x1, y1, x2, y2, sharp=False):
     drawing = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
     start_point = torch.tensor([x1, y1], dtype=torch.float32)
     end_point = torch.tensor([x2, y2], dtype=torch.float32)
-    width = torch.tensor(5, dtype=torch.float32)
-    decay = torch.tensor(0.5, dtype=torch.float32)
+    width = torch.tensor(1 * imsize/64, dtype=torch.float32)
+    decay = torch.tensor(1.0/(imsize/64), dtype=torch.float32)
+    if sharp:
+        width = torch.tensor(0, dtype=torch.float32)
+        decay = 20.0/(imsize/64)
     length = torch.dist(start_point, end_point)
 
     i_values = torch.tensor([[i for j in range(imsize)] for i in range(imsize)], dtype=torch.float32)
@@ -55,6 +58,6 @@ for k in range(30):
 
 plt.figure()
 plt.plot(np.arange(len(losses)), losses)
-plt.xlabel("Distance to the line")
+plt.xlabel("Distance to the reference line")
 plt.ylabel("Loss")
 plt.show()

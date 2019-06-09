@@ -43,13 +43,13 @@ class Drawer:
                 loss.backward()
                 return loss
             loss = optimizer.step(closure)
+            self.loss_history.append(loss.item())
 
         print("Final loss : ", loss.item())
         self.drawing = self.line_drawer.forward(self.drawing)
         imshow(self.drawing)
 
         self.line_history.append([self.line_drawer.start_point.clone(),self.line_drawer.end_point.clone()])
-        self.loss_history.append(loss.item())
 
 
 class LineDrawer:
@@ -122,10 +122,10 @@ def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untit
     if clean:
         clean_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
         clean_line_drawer = LineDrawer()
+        clean_line_drawer.decay = 6.0/(imsize/64)
         for line in drawer.line_history:
             clean_line_drawer.start_point=line[0]
             clean_line_drawer.end_point=line[1]
-            clean_line_drawer.decay=6.0/(imsize/64)
             clean_image = clean_line_drawer.forward(clean_image)
         clean_title = save_title + '_clean_drawing.jpg'
         imshow(clean_image, title=clean_title, save=save)
