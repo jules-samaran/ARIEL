@@ -34,9 +34,19 @@ The content loss we used then was the mean squared difference between the encode
 
 The next step after devising this content loss was to be able to automatize the solving of a minimization problem: at each iteration when we draw a new line on the current drawing, which line minimizes the content loss between the drawing and the target image.
 
+What we optimized were 4 parameters only: the coordinates of the two extremities of the line being drawn. We had three other parameters which were stationary: width (the width of the line), intensity (a float number between 0 and 1 corrsponding to the intensity of the pixels on the line) and decay (float that determines how fast the pixels become white arounf the line in terms of number of pixels).
+
+CNNs treat the information locally, the problem is that if we only deal with extremely thin straight lines, if the line we are drawing is not initially extremely close to the target line we are trying to draw then we won't be able to optimize the parameters of the drawn line. Indeed outside of a very small sphere of pixels around the reference line, being 10 pixels or 60 pixels away from the target line doesn't make any difference from the point of view of the CNN's comparison loss. Since the gradient of the comparison loss will be zero, we won't be able to move step by step the drawn line closer to the target line by using a gradient descent.
+
 #### Selection among random initializations
 
+In order to give the algorithm a chance to solve this minimization problem we started each iteration by choosing randomly 100 or 200 initializations for the drawn line and selecting the one for which the loss is the lowest when we add it to the drawing.
+
 #### The blurrying trick
+
+We decided to draw wider lines and to raise significantly the decay parameter so that each drawn line actually affects several pixels around it and is less restrictively localized.
+This trick allowed the optimization to be completed without any problems, you can see more about this in the first section of the notebook.
+
 
 ## Contributing
 
