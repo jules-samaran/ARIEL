@@ -7,13 +7,13 @@ import numpy as np
 
 
 class Drawer:
+    # this is the object that oversees the whole drawing process
     def __init__(self, input_img, imsize=imsize):
         self.drawing = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
         self.input_img = input_img
-        # line_drawer is a simple MLP who draws a line on the drawing
         self.line_drawer = LineDrawer()
-        self.loss_history = []
-        self.line_history = []
+        self.loss_history = []  # this contains the evolution of the loss durig each optimization
+        self.line_history = []  # this will contain all the coordinates of the lines drawn
 
     # Draws a new line
     def run_segment_optimizer(self, cnn, n_epochs=10):
@@ -53,7 +53,7 @@ class Drawer:
 
 
 class LineDrawer:
-
+    # this object just handles how we add a line on a drawing
     def __init__(self):
         self.start_point = imsize * torch.rand([2])
         self.end_point = imsize * torch.rand([2])
@@ -96,7 +96,22 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untitled'):
+def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untitled', save_points=False):
+    r""" This is the function we use to ask ARIEL to draw a sketch of an image
+
+    :param input_img: the image we want to draw
+    :param n_lines: an integer that corresponds the number of straight lines used to draw the sketch, it is determined
+    before we start drawing
+    :param n_epoch: an integer, it is the number of iterations in the optimization of each line
+    :param clean: a boolean that determines whether or not we will show at the end of the computations another version
+    of the drawing where the lines will have been "unblurried"
+    :param save: a boolean that indicates whether you want to save the final drawing
+    :param save_title: a str that indicates the path here you would like to save the results if save were True
+    (you don't need to add the .jpg extension to that path)
+    :param save_points: a boolean that indicates whether you want to save the coordinates of the extremities of the
+    lines drawn
+    :return: the drawer object
+    """
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -115,7 +130,7 @@ def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untit
     image_title=save_title + '_drawing.jpg'
     imshow(drawer.drawing, title=image_title, save=save)
 
-    if save:
+    if save_points:
         points_title = save_title + '_segment_coordinates'
         np.save(points_title, drawer.line_history)
 

@@ -52,6 +52,7 @@ plt.ion()
 
 
 def imshow(tensor, title=None, save=False):
+    # displays an image which was in tensor format
     image = tensor.cpu().clone()  # we clone the tensor to not do changes on it
     image = image.squeeze(0)      # remove the fake batch dimension
     image = unloader(image)
