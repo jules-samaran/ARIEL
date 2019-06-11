@@ -1,4 +1,4 @@
-# ARIEL
+# ARIEL : Automated Reconstruction of Images with Enhanced Lines
 
 This project was conducted on their free time by two students from Mines Paristech, Jules Samaran and Timothée Launay. The objective was to create an algorithm which takes as input an image and draws a sketch as close as possible to the input image. We chose to restrict the drawing technique to black straight lines drawn iteratively so that the algorithm's behaviour would resemble an artist's attempt to draw a preliminary sketch. In the "Technical description" section you can read how we achieved this goal.
 
