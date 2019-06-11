@@ -14,7 +14,7 @@ or simply install manually every python package listed in the requirements.txt f
 
 ### Using ARIEL
 
-Take a look at "Demo_notebook.ipynb" which will show what the algorithm can do and will enable you to realize sketches of any image.
+Take a look at "Demo_notebook.ipynb" which can show you what the algorithm can do and will enable you to realize sketches of any image.
 
 ## Technical description
 
@@ -26,7 +26,7 @@ Thus we needed to come up with a relevant criteria able to quantify the differen
 
 #### Convolutional Neural Networks
 
-Convolutional Neural Networks (CNNS) are the class of deep neural networks s that are most powerful in image processing tasks. They can be described as successive layers of collections of image filters that each extract different features from the input image. When Convolutional Neural Networks are trained on object recognition, they develop a representation of the image that makes object information increasingly explicit along the processing hierarchy. We chose to use [this pre-trained model](https://arxiv.org/abs/1409.1556) because we could not hope to train on our own a model as performant as this one. This model was initially trained on a huge dataset for image classification, the output of the feature maps would be fed to fully connected layers whose output would determine the class to which the input image belonged to. We downloaded this whole model and troncated by removing all the layers after the one feature map we were interested in and we froze all the parameters in the model.
+Convolutional Neural Networks (CNNS) are the class of deep neural networks that are most powerful in image processing tasks. They can be described as successive layers of collections of image filters that each extract different features from the input image. When Convolutional Neural Networks are trained on object recognition, they develop a representation of the image that makes object information increasingly explicit along the processing hierarchy. We chose to use [this pre-trained model](https://arxiv.org/abs/1409.1556) because we could not hope to train on our own a model as performant as this one. This model was initially trained on a huge dataset for image classification, the output of the feature maps would be fed to fully connected layers whose output would determine the class to which the input image belonged to. We downloaded this whole model and troncated by removing all the layers after the one feature map we were interested in and we froze all the parameters in the model.
 
 The content loss we used then was the mean squared difference between the encoded versions of both images. What we call the encoded version of an image is the output of the forward computation of one feature map by the CNN. We chose a feature map commonly used to characterize the content of an image. 
 
