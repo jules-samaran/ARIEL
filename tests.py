@@ -14,13 +14,14 @@ def test_line_drawer():
     line_drawer = LineDrawer()
     drawn = line_drawer.forward(blank_img)
     imshow(drawn)
-
+    for i in range(100000000000):
+        pass
 
 def test_overall(names_list):
     for name in names_list:
-        _ = run(image_loader("./Images/"+name+".jpg"), 600, 50, clean=True, save=True, save_title=name)
+        _ = run(image_loader("./Images/"+name+".jpg"), 300, 50, unblur=True, save=True, save_title=name)
 
 
 # test_img_and_cnn()
-# test_line_drawer()
-test_overall(["chat"])
+#test_line_drawer()
+test_overall(["boat","test"])

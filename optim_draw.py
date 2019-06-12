@@ -96,15 +96,15 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untitled', save_points=False):
+def run(input_img, n_lines, n_epoch=10, unblur=True, save=True, save_title='untitled', save_points=False):
     r""" This is the function we use to ask ARIEL to draw a sketch of an image
 
     :param input_img: the image we want to draw
     :param n_lines: an integer that corresponds the number of straight lines used to draw the sketch, it is determined
     before we start drawing
     :param n_epoch: an integer, it is the number of iterations in the optimization of each line
-    :param clean: a boolean that determines whether or not we will show at the end of the computations another version
-    of the drawing where the lines will have been "unblurried"
+    :param unblur: a boolean that determines whether or not we will show at the end of the computations another version
+    of the drawing where the lines will have been unblurred
     :param save: a boolean that indicates whether you want to save the final drawing
     :param save_title: a str that indicates the path here you would like to save the results if save were True
     (you don't need to add the .jpg extension to that path)
@@ -134,14 +134,14 @@ def run(input_img, n_lines, n_epoch=10, clean=True, save=True, save_title='untit
         points_title = save_title + '_segment_coordinates'
         np.save(points_title, drawer.line_history)
 
-    if clean:
-        clean_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
-        clean_line_drawer = LineDrawer()
-        clean_line_drawer.decay = 6.0/(imsize/64)
+    if unblur:
+        unblurred_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
+        unblurred_line_drawer = LineDrawer()
+        unblurred_line_drawer.decay = 6.0/(imsize/64)
         for line in drawer.line_history:
-            clean_line_drawer.start_point=line[0]
-            clean_line_drawer.end_point=line[1]
-            clean_image = clean_line_drawer.forward(clean_image)
-        clean_title = save_title + '_clean_drawing.jpg'
-        imshow(clean_image, title=clean_title, save=save)
+            unblurred_line_drawer.start_point=line[0]
+            unblurred_line_drawer.end_point=line[1]
+            unblurred_image = unblurred_line_drawer.forward(unblurred_image)
+        unblurred_title = save_title + '_unblurred_drawing.jpg'
+        imshow(unblurred_image, title=unblurred_title, save=save)
     return drawer
