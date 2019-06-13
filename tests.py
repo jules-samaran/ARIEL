@@ -14,8 +14,8 @@ def test_line_drawer():
     line_drawer = LineDrawer()
     drawn = line_drawer.forward(blank_img)
     imshow(drawn)
-    for i in range(100000000000):
-        pass
+    input('press Enter to exit')
+
 
 def test_overall(names_list):
     for name in names_list:
@@ -23,5 +23,5 @@ def test_overall(names_list):
 
 
 # test_img_and_cnn()
-#test_line_drawer()
+# test_line_drawer()
 test_overall(["boat","test"])

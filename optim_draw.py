@@ -4,6 +4,7 @@ import torch.optim as optim
 from model_encoder import *
 from tqdm import tqdm
 import numpy as np
+import time
 
 
 class Drawer:
@@ -112,6 +113,8 @@ def run(input_img, n_lines, n_epoch=10, unblur=True, save=True, save_title='unti
     lines drawn
     :return: the drawer object
     """
+
+    t_0 = time.time()
     cnn = CNNFeatureExtractor()
 
     # retrain the model on small datasets containing hand drawn sketches NOT YET
@@ -144,4 +147,10 @@ def run(input_img, n_lines, n_epoch=10, unblur=True, save=True, save_title='unti
             unblurred_image = unblurred_line_drawer.forward(unblurred_image)
         unblurred_title = save_title + '_unblurred_drawing.jpg'
         imshow(unblurred_image, title=unblurred_title, save=save)
+    # computing and formatting the execution time
+    t_end = time.time()
+    secs = t_end - t_0
+    mins = secs // 60
+    runtime = [mins // 60, mins%60, secs%60]
+    print("Complete runtime: %ih %im %is"% (runtime[0], runtime[1], runtime[2]))
     return drawer
