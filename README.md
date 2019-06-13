@@ -18,6 +18,8 @@ Take a look at "Demo_notebook.ipynb" which can show you what the algorithm can d
 
 ## Technical description
 
+(For further information, check out the ```model_sanity_check.ipynb``` which contains tests to illustrate those technical explanations)
+
 We started with the idea that we wanted to draw each line one by one by adding at each iteration the line that minimizes the comparison loss between the unfinished drawing and the input image.
 
 ### The content loss
@@ -42,11 +44,16 @@ CNNs treat the information locally, the problem is that if we only deal with ext
 
 In order to give the algorithm a chance to solve this minimization problem we started each iteration by choosing randomly 100 or 200 initializations for the drawn line and selecting the one for which the loss is the lowest when we add it to the drawing.
 
+#### Optimizing each line
+
+Once we have selected the best initialization we use an Adamax optimizer that tries to optimize the coordinates of the two ends of the line we want to draw in order to minimize the content loss between the target image and our drawing with the last line on it.
+
 #### The blurrying trick
 
 We decided to draw wider lines and to raise significantly the decay parameter so that each drawn line actually affects several pixels around it and is less restrictively localized.
 This trick allowed the optimization to be completed without any problems, you can see more about this in the first section of the notebook.
 
+For further information, check out the ```model_sanity_check.ipynb``` which contains tests to illustrate those technical explanations.
 
 ## Contributing
 
