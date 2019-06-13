@@ -153,6 +153,6 @@ def run(input_img, n_lines, n_epoch=40, unblur=True, save=True, save_title='unti
     t_end = time.time()
     secs = t_end - t_0
     mins = secs // 60
-    runtime = [mins // 60, mins%60, secs%60]
+    runtime = [mins // 60, mins % 60, secs % 60]
     print("Complete runtime: %ih %im %is"% (runtime[0], runtime[1], runtime[2]))
     return drawer
