@@ -57,9 +57,9 @@ class LineDrawer:
     def __init__(self):
         self.start_point = imsize * torch.rand([2])
         self.end_point = imsize * torch.rand([2])
-        self.width = torch.tensor(0 * imsize/64, dtype=torch.float32)
+        self.width = torch.tensor(1.0 * imsize/64, dtype=torch.float32)
         self.decay = torch.tensor(2.0/(imsize/64), dtype=torch.float32)
-        self.intensity = torch.tensor(1., dtype=torch.float32)
+        self.intensity = torch.tensor(0.3, dtype=torch.float32)
 
     def forward(self, current_drawing):
         length = torch.dist(self.start_point, self.end_point)
@@ -96,7 +96,7 @@ class LineDrawer:
 
 
 # main function
-def run(input_img, n_lines, n_epoch=10, unblur=True, save=True, save_title='untitled', save_points=False):
+def run(input_img, n_lines, n_epoch=40, unblur=True, save=True, save_title='untitled', save_points=False):
     r""" This is the function we use to ask ARIEL to draw a sketch of an image
 
     :param input_img: the image we want to draw
@@ -137,7 +137,9 @@ def run(input_img, n_lines, n_epoch=10, unblur=True, save=True, save_title='unti
     if unblur:
         unblurred_image = torch.ones([1, 3, imsize, imsize], dtype=torch.float32)
         unblurred_line_drawer = LineDrawer()
-        unblurred_line_drawer.decay = 6.0/(imsize/64)
+        unblurred_line_drawer.width = 1.5*(imsize/64)
+        unblurred_line_drawer.decay = 6/(imsize/64)
+        unblurred_line_drawer.intensity = 0.2
         for line in drawer.line_history:
             unblurred_line_drawer.start_point=line[0]
             unblurred_line_drawer.end_point=line[1]
