@@ -1,5 +1,5 @@
 Pillow
-torch == 1.0.0
+torch == 2.2.0
 torchvision < 0.3.0
 matplotlib
 numpy
